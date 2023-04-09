@@ -8,7 +8,7 @@ import { InformativeError } from "./InformativeError.ts";
 // original hostnames
 let ECB_HOSTNAME = "sdw-wsrest.ecb.europa.eu";
 let YAHOO_FINANCE_QUERY1_HOSTNAME = "query1.finance.yahoo.com";
-let YAHOO_FINANCE_HOSTNAME = "finance.yahoo.com";
+let JUSTETF_HOSTNAME = "justetf.com";
 
 export function setECBHostname(hostname: string) {
     ECB_HOSTNAME = hostname;
@@ -18,8 +18,8 @@ export function setYahooFinanceQuery1Hostname(hostname: string) {
     YAHOO_FINANCE_QUERY1_HOSTNAME = hostname;
 }
 
-export function setYahooFinanceHostname(hostname: string) {
-    YAHOO_FINANCE_HOSTNAME = hostname;
+export function setJustETFHostname(hostname: string) {
+    JUSTETF_HOSTNAME = hostname;
 }
 
 interface ECBTimePeriod {
@@ -155,9 +155,11 @@ export async function getSecurity(isin: string): Promise<Security> {
     switch(quoteType) {
         case "MUTUALFUND":
         case "ETF":
-            const securityDataResponse = await fetch(`https://${YAHOO_FINANCE_HOSTNAME}/quote/${symbol}`);
-            const html = await securityDataResponse.text();
-            const accumulating = /data-test="TD_YIELD-value">0\.00%<\/td/g.test(html) || /data-test="TD_YIELD-value">N\/A<\/td/g.test(html);
+            const response = await fetch(`https://${JUSTETF_HOSTNAME}/uk/etf-profile.html?isin=${isin}`, {
+                "method": "GET",
+            });
+            const html = await response.text();
+            const accumulating = /<td class="val">Accumulating<\/td>/g.test(html);
             return {
                 type: SecurityType.ETF,
                 name,
